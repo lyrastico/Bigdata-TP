@@ -1,0 +1,25 @@
+# Exemple de configuration – à copier en config.yaml et à adapter
+
+paths:
+  base_data_dir: "./data"
+  raw_dir: "./data/raw"
+  processed_dir: "./data/processed"
+
+sources:
+  csv_example:
+    type: "csv"
+    path: "./data/input/example.csv"   # à adapter
+
+  api_example:
+    type: "api"
+    base_url: "https://api.example.com/data"  # à adapter
+    params:
+      key: "YOUR_API_KEY"
+
+database:
+  driver: "postgresql"
+  host: "localhost"
+  port: 5432
+  user: "datalake_user"
+  password: "datalake_pass"
+  db: "datalake_db"

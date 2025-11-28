@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: datalake_postgres
+    environment:
+      POSTGRES_USER: datalake_user
+      POSTGRES_PASSWORD: datalake_pass
+      POSTGRES_DB: datalake_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
