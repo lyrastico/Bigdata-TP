@@ -1,0 +1,80 @@
+# ===============================
+#   PYTHON & ENVIRONNEMENT
+# ===============================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+
+# Notebooks
+*.ipynb_checkpoints
+
+# Logs
+*.log
+
+
+# ===============================
+#   DATA LAKE : fichiers RAW  et PROCESSED
+# ===============================
+data/raw/
+data/processed/
+data/input/*.tmp
+data/input/*.bak
+
+# Ne pas ignorer les dossiers vides
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/input/.gitkeep
+
+
+# ===============================
+#   PARQUET, CSV, EXCEL TEMPORAIRES
+# ===============================
+*.parquet
+*.csv~
+*.tmp
+*.bak
+
+
+# ===============================
+#   STREAMLIT
+# ===============================
+.streamlit/
+**/.streamlit/
+
+
+# ===============================
+#   DOCKER
+# ===============================
+# Docker compose local state
+docker-compose.override.yml
+docker/data/
+docker/volumes/
+**/db_data/
+
+
+# ===============================
+#   SYSTEM FILES (Windows / Mac)
+# ===============================
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+
+# ===============================
+#   EDITORS (VS Code, PyCharm…)
+# ===============================
+.vscode/
+.idea/
+
+
+# ===============================
+#   SECRETS (par sécurité)
+# ===============================
+*.env
+config/local_config.yaml
+secrets.json

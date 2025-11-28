@@ -1,100 +1,217 @@
-# Projet Big Data / DataLake – Skeleton
+# 🧠 Big Data – DataLake IA (Google Trends & Actualités)
 
-Ce dépôt contient une **architecture type** pour le TP *Architecture Big Data : Ingestion, Persistance, Traitement et Insights des Données*.
+Projet réalisé dans le cadre du module **Architecture Big Data – DataLake**.  
+L’objectif est de construire un pipeline complet d’ingestion, de persistance et de visualisation autour du thème :
 
-L'idée est de vous fournir une base de travail :
-- une séparation claire des **3 couches** : ingestion, persistance, insight,
-- des exemples de scripts Python prêts à adapter,
-- un `docker-compose` minimal pour une base PostgreSQL,
-- un exemple de dashboard **Streamlit**.
+# 🎯 Analyse de l’évolution de l’intérêt mondial pour l’Intelligence Artificielle
 
-> ⚠️ Tout est **à adapter** à votre sujet, vos jeux de données et vos choix technologiques.
+Ce projet combine deux sources de données **hétérogènes** :
+
+1. **Google Trends (CSV)** – intérêt du public pour :  
+   - “ia”  
+   - “deep learning”  
+   - “chatgpt”
+
+2. **Google News RSS (XML / RSS)** – nombre d’articles publiés sur **“intelligence artificielle”**
+
+Ces données sont ingérées en batch, stockées dans une couche raw, transformées puis envoyées dans un Data Warehouse Postgres, et visualisées via Streamlit.
 
 ---
 
-## Structure
+# 📌 Sujet du projet
 
-```bash
-bigdata_datalake_tp/
-├── README.md
-├── docker-compose.yml
-├── requirements.txt
-├── config/
-│   └── config_example.yaml
-├── ingestion/
-│   ├── ingest_csv_batch.py
-│   └── ingest_api_batch.py
-├── persistence/
-│   ├── create_tables.sql
-│   └── load_to_warehouse.py
-├── insight/
-│   └── dashboard_streamlit.py
-└── docs/
-    ├── architecture.md
-    └── questions_recherche.md
+L’objectif est de construire une architecture DataLake comprenant :
+
+- Ingestion (CSV + RSS)  
+- Nettoyage et transformation  
+- Stockage raw + Data Warehouse  
+- Dashboard Insight interactif  
+
+Le thème choisi :  
+> Étudier l’évolution de l’intérêt mondial pour l’Intelligence Artificielle, ainsi que son niveau de médiatisation, puis explorer d’éventuelles corrélations.
+
+---
+
+# 🔎 Sources de données utilisées
+
+## 1. Google Trends (CSV)
+
+Google Trends fournit un score hebdomadaire (0–100) indiquant à quel point un terme est recherché.  
+Mots-clés utilisés :
+
+- `ia`
+- `deep learning`
+- `chatgpt`
+
+Exemple de CSV :
+
+```
+Semaine, deep learning
+2020-11-22, 15
+2020-11-29, 16
+```
+
+Ce sont des données historiques permettant d’analyser les tendances du public.
+
+---
+
+## 2. Google News RSS (Actualités IA)
+
+Flux RSS Google News :  
+`https://news.google.com/rss/search?q=intelligence+artificielle`
+
+Chaque article contient :
+
+- un titre  
+- une date de publication  
+- une source média  
+
+Les données sont nettoyées puis agrégées **par semaine**, donnant :
+
+| event_time | metric_1 | category |
+|------------|----------|----------|
+| 2025-11-17 | 42       | news_ia  |
+| 2025-11-24 | 18       | news_ia  |
+
+---
+
+# 🧩 Pourquoi combiner ces deux sources ?
+
+Parce qu’ensemble, elles permettent d’étudier l’écosystème IA :
+
+### 🔵 Google Trends → intérêt du public  
+### 🟠 Google News → médiatisation dans les médias  
+
+Cela permet de voir :
+
+- si les pics de recherche correspondent aux pics d’actualité  
+- l’impact médiatique de ChatGPT  
+- la différence entre intérêt général (IA) et intérêt technique (deep learning)
+
+---
+
+# 🏗️ Architecture du projet
+
+```
+             +----------------------+
+             | Google Trends (CSV)  |
+             +----------+-----------+
+                        |
+                        v
+                ingest_csv_batch.py
+                        |
+                +-------+-------+
+                |     Raw       |
+                +-------+-------+
+                        |
+             +----------+-----------+
+             | Google News (RSS)    |
+             +----------+-----------+
+                        |
+                        v
+               ingest_news_batch.py
+                        |
+                        v
+           +------------+-------------+
+           | ETL → Postgres (DW)      |
+           +------------+-------------+
+                        |
+                        v
+                  Dashboard Insight
+                 (Streamlit, filters)
 ```
 
 ---
 
-## 1. Installation rapide
+# 🚀 Installation & Lancement
 
-```bash
+## 1. Cloner
+
+```powershell
+git clone https://github.com/lyrastico/Bigdata-TP.git
+cd Bigdata-TP
+```
+
+## 2. Installer Python
+
+```powershell
 python -m venv .venv
-source .venv/bin/activate  # sous Windows: .venv\Scripts\activate
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-Lancez la base de données :
+## 3. Lancer Postgres (Docker)
 
-```bash
+```powershell
 docker-compose up -d
 ```
 
----
+Créer les tables :
 
-## 2. Flux de bout en bout (exemple)
+```powershell
+Get-Content .\persistence\create_tables.sql | docker exec -i datalake_postgres psql -U datalake_user -d datalake_db
+```
 
-1. **Ingestion (batch)**
-   - `ingestion/ingest_csv_batch.py` : récupère un fichier CSV (local ou distant) et le stocke en **raw**.
-   - `ingestion/ingest_api_batch.py` : appelle une API et stocke la réponse JSON en **raw**.
+## 4. Ingestion
 
-   Les données brutes sont stockées, par exemple, sous :
-   - `data/raw/csv/...`
-   - `data/raw/api/...`
+### Google Trends
 
-2. **Persistance / ETL**
-   - `persistence/load_to_warehouse.py` :
-     - lit les données `raw`,
-     - fait un nettoyage / normalisation simple,
-     - insère les données dans PostgreSQL (ou autre base) via les tables définies dans `create_tables.sql`.
+```powershell
+python ingestion\ingest_csv_batch.py
+```
 
-3. **Insight / Dashboard**
-   - `insight/dashboard_streamlit.py` :
-     - lit les données dans PostgreSQL,
-     - propose quelques filtres,
-     - affiche des graphes simples,
-     - permet (exemple) d'insérer ou d'éditer une ligne.
+### Actualités IA
 
-Lancement :
+```powershell
+python ingestion\ingest_news_batch.py
+```
 
-```bash
-# 1. ingestion
-python ingestion/ingest_csv_batch.py
-python ingestion/ingest_api_batch.py
+## 5. ETL vers Postgres
 
-# 2. ETL -> base
-python persistence/load_to_warehouse.py
+```powershell
+python persistence\load_to_warehouse.py
+```
 
-# 3. Dashboard
-streamlit run insight/dashboard_streamlit.py
+## 6. Dashboard
+
+```powershell
+streamlit run insight\dashboard_streamlit.py
 ```
 
 ---
 
-## 3. À faire par votre groupe
+# ♻️ Réinitialiser complètement les données
 
-- Choisir **au moins deux sources** (CSV, API, scraping, etc.).
-- Adapter les scripts d'ingestion pour vos vraies sources.
-- Concevoir un **schéma de tables** cohérent dans `create_tables.sql`.
-- Définir vos **questions d'analyse** dans `docs/questions_recherche.md` et réaliser les graphes / rapports associés.
-- Compléter `docs/architecture.md` avec votre schéma final et vos choix techniques.
+## 1. Vider Postgres
+
+```powershell
+docker exec -it datalake_postgres psql -U datalake_user -d datalake_db
+```
+
+Dans psql :
+
+```sql
+TRUNCATE TABLE fact_event, dim_source RESTART IDENTITY;
+\q
+```
+
+## 2. Supprimer Raw & Processed
+
+```powershell
+Remove-Item data\raw\* -Force
+Remove-Item data\processed\* -Force
+```
+
+## 3. Re-ingérer
+
+```powershell
+python ingestion\ingest_csv_batch.py
+python ingestion\ingest_news_batch.py
+python persistence\load_to_warehouse.py
+```
+
+---
+
+# 👥 Auteurs
+
+Projet réalisé dans le cadre du module Big Data – DataLake (IPSSI).
